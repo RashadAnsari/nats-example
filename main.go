@@ -8,6 +8,10 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
+const (
+	ExitProgramTimeout = 10 * time.Second
+)
+
 type NatsConnection struct {
 	Subject    string
 	Queue      string
@@ -17,6 +21,7 @@ type NatsConnection struct {
 func (n *NatsConnection) Create() {
 	var err error
 	n.Connection, err = nats.Connect(nats.DefaultURL)
+
 	if err != nil {
 		log.Fatalf("failed to create nates connection: %s", err.Error())
 	}
@@ -53,5 +58,5 @@ func main() {
 		nc.Publish(strconv.Itoa(i))
 	}
 
-	time.Sleep(10 * time.Second)
+	time.Sleep(ExitProgramTimeout)
 }
