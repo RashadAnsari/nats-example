@@ -1,4 +1,4 @@
-module github.com/rashadansari/nats
+module github.com/rashadansari/nats-example
 
 go 1.13
 
