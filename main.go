@@ -1,20 +1,22 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"strconv"
-	"time"
 
 	"github.com/nats-io/nats.go"
 )
 
 const (
-	ExitProgramTimeout = 10 * time.Second
+	SubscriberCount = 2
+	MessageCount    = 1000
 )
 
 type NatsConnection struct {
 	Subject    string
 	Queue      string
+	Chan       chan string
 	Connection *nats.Conn
 }
 
@@ -29,7 +31,7 @@ func (n *NatsConnection) Create() {
 
 func (n NatsConnection) Subscribe(name string) {
 	_, err := n.Connection.QueueSubscribe(n.Subject, n.Queue, func(msg *nats.Msg) {
-		log.Printf("receive message in subscriber %s: %s", name, string(msg.Data))
+		n.Chan <- fmt.Sprintf("receive message in subscriber %s: %s", name, string(msg.Data))
 	})
 	if err != nil {
 		log.Fatalf("failed to create subsciber %s: %s", name, err.Error())
@@ -46,17 +48,21 @@ func main() {
 	nc := NatsConnection{
 		Subject: "my-subject",
 		Queue:   "my-queue",
+		Chan:    make(chan string),
 	}
 
 	nc.Create()
 
-	for i := 0; i < 2; i++ {
+	for i := 0; i < SubscriberCount; i++ {
 		nc.Subscribe(strconv.Itoa(i))
 	}
 
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < MessageCount; i++ {
 		nc.Publish(strconv.Itoa(i))
 	}
 
-	time.Sleep(ExitProgramTimeout)
+	for i := 0; i < MessageCount; i++ {
+		msg := <-nc.Chan
+		log.Println(msg)
+	}
 }
