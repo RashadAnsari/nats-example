@@ -4,13 +4,15 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/nats-io/nats.go"
 )
 
 const (
 	SubscriberCount = 2
-	MessageCount    = 1000
+	MessageCount    = 100
+	PublishDelay    = 100 * time.Millisecond
 )
 
 type NatsConnection struct {
@@ -57,9 +59,12 @@ func main() {
 		nc.Subscribe(strconv.Itoa(i))
 	}
 
-	for i := 0; i < MessageCount; i++ {
-		nc.Publish(strconv.Itoa(i))
-	}
+	go func() {
+		for i := 0; i < MessageCount; i++ {
+			nc.Publish(strconv.Itoa(i))
+			time.Sleep(PublishDelay)
+		}
+	}()
 
 	for i := 0; i < MessageCount; i++ {
 		msg := <-nc.Chan
