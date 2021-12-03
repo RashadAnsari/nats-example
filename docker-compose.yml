@@ -1,18 +1,9 @@
 version: "3"
 services:
   nats-server:
-    image: nats:2.1.7-alpine
+    image: nats:latest
     hostname: nats-server
     container_name: nats-server
+    command: -js
     ports:
-      - 4222:4222
-      - 8222:8222
-      - 6222:6222
-
-  nats-streaming-server:
-    image: nats-streaming:0.18.0-alpine
-    hostname: nats-streaming-server
-    container_name: nats-streaming-server
-    depends_on:
-      - nats-server
-    command: nats-streaming-server --nats_server nats://nats-server:4222
+      - "4222:4222"
