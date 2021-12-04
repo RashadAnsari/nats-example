@@ -66,9 +66,20 @@ func (c *JetStreamConnection) Init() {
 }
 
 func (c JetStreamConnection) Subscribe(name string) {
+	opts := []nats.SubOpt{
+		nats.Durable(c.Queue),
+		nats.AckAll(),
+		nats.ManualAck(),
+		nats.DeliverLast(),
+	}
+
 	_, err := c.jsContext.QueueSubscribe(c.Subject, c.Queue, func(msg *nats.Msg) {
 		c.Chan <- fmt.Sprintf("receive message in jetstream subscriber %s: %s", name, string(msg.Data))
-	})
+
+		if err := msg.Ack(); err != nil {
+			log.Fatalf("failed to send ack for jetstream message %s: %s", name, string(msg.Data))
+		}
+	}, opts...)
 
 	if err != nil {
 		log.Fatalf("failed to create jestream subsciber %s: %s", name, err.Error())
