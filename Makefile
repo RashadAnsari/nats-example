@@ -8,7 +8,7 @@ lint:
 	@golangci-lint run --deadline 10m ./...
 
 up:
-	@docker-compose up -d
+	@docker compose up -d
 
 down:
-	@docker-compose down
+	@docker compose down

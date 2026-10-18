@@ -1,7 +1,6 @@
-version: "3"
 services:
   nats-server:
-    image: nats:latest
+    image: nats:2.15.1
     hostname: nats-server
     container_name: nats-server
     command: -js
